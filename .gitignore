@@ -1,0 +1,31 @@
+# Node.js
+node_modules
+npm-debug.log
+yarn-error.log
+*.log
+
+# Environnement
+.env
+
+# Dossier de cache
+.cache/
+
+# Dossiers temporaires
+tmp/
+temp/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE et éditeurs de texte
+.vscode/
+.idea/
+.DS_Store
+
+# Build files
+dist/
+build/
