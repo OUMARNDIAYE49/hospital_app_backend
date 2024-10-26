@@ -1,12 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import bodyParser from 'body-parser'; 
+import bodyParser from 'body-parser';
 import login from './src/api/login.js';
 import utilisateurRoutes from './src/routes/utilisateurRoutes.js';
 import patientRoutes from './src/routes/patientRoutes.js';
 import specialiteRoutes from './src/routes/specialiteRoutes.js'; // Importer les routes pour les spécialités
 import rendezVousRoutes from './src/routes/rendezVousRoutes.js'; // Importer les routes pour les rendez-vous
-import { authMiddleware, adminMiddleware } from './src/middlewares/authentification.js';
+import {
+  authMiddleware,
+  adminMiddleware
+} from './src/middlewares/authentification.js';
 
 dotenv.config(); // Charger les variables d'environnement
 
@@ -27,9 +30,9 @@ app.use('/api', rendezVousRoutes); // Routes pour les rendez-vous
 app.use('/api/admin', authMiddleware, adminMiddleware, utilisateurRoutes); // Routes réservées aux admins
 
 // Gestion des erreurs
-app.use((err, req, res, next) => {
+app.use((err, req, res) => { // Retiré `next` car il n'est pas utilisé
   res.status(err.status || 500).json({
-    message: err.message || 'Une erreur interne est survenue',
+    message: err.message || 'Une erreur interne est survenue'
   });
 });
 

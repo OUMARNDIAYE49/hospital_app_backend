@@ -1,76 +1,79 @@
-import express from 'express';
+import express from 'express'
 import {
   creerUtilisateur,
   afficherUtilisateurParId,
   afficherUtilisateurs,
   supprimerUtilisateur,
   mettreAjourUtilisateur
-} from '../controllers/UtilisateurController.js'; // Importation des contrôleurs comme dans la référence
+} from '../controllers/UtilisateurController.js'
 import {
   creerUtilisateurValidator,
   mettreAjourUtilisateurValidator,
   supprimerUtilisateurValidator
-} from '../validators/UtilisateurValidator.js'; // Correction des noms de validateurs pour être cohérents avec la référence
-import { authMiddleware, adminMiddleware } from '../middlewares/authentification.js'; // Correction du nom du fichier pour correspondre à la référence
-import { validationResult } from 'express-validator';
+} from '../validators/UtilisateurValidator.js'
+import {
+  authMiddleware,
+  adminMiddleware
+} from '../middlewares/authentification.js'
+import { validationResult } from 'express-validator'
 
-const router = express.Router();
+const router = express.Router()
 
 // Fonction de validation des erreurs
 const validate = (req, res, next) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req)
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ errors: errors.array() })
   }
-  next();
-};
+  next()
+}
 
 // Routes pour les utilisateurs avec le chemin "/utilisateurs"
 
 // Créer un nouvel utilisateur
 router.post(
   '/utilisateurs',
-  // authMiddleware,               // Middleware pour vérifier l'authentification
-  // adminMiddleware,              // Middleware pour vérifier les droits d'administration
-  // creerUtilisateurValidator,    // Validation des données d'entrée (correction du nom du validateur)
-  // validate,                     // Vérification des erreurs de validation
-  creerUtilisateur              // Utilisation du contrôleur importé (correction du nom de la fonction)
-);
+  authMiddleware,
+  // adminMiddleware, // Utilisez ceci pour restreindre la création à des utilisateurs avec le rôle ADMIN
+  creerUtilisateurValidator,
+  validate,
+  creerUtilisateur
+)
 
 // Mettre à jour un utilisateur existant
 router.put(
   '/utilisateurs/:id',
-  // authMiddleware,
-  // adminMiddleware,
-  // mettreAjourUtilisateurValidator, // Validation des données d'entrée (correction du nom du validateur)
-  // validate,
-  mettreAjourUtilisateur            // Utilisation du contrôleur importé (correction du nom de la fonction)
-);
+  authMiddleware,
+  // adminMiddleware, // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
+  mettreAjourUtilisateurValidator,
+  validate,
+  mettreAjourUtilisateur
+)
 
 // Supprimer un utilisateur
 router.delete(
   '/utilisateurs/:id',
-  // authMiddleware,
-  // adminMiddleware,
-  supprimerUtilisateurValidator,   // Validation des données d'entrée (correction du nom du validateur)
+  authMiddleware,
+  adminMiddleware, // Assurez-vous que les administrateurs peuvent supprimer les utilisateurs
+  supprimerUtilisateurValidator,
   validate,
-  supprimerUtilisateur              // Utilisation du contrôleur importé (correction du nom de la fonction)
-);
+  supprimerUtilisateur
+)
 
 // Récupérer un utilisateur par ID
 router.get(
   '/utilisateurs/:id',
   // authMiddleware,
-  // adminMiddleware,
-  afficherUtilisateurParId         // Utilisation du contrôleur importé (correction du nom de la fonction)
-);
+  // adminMiddleware, // Décommentez si seulement les admins doivent voir les détails d'un utilisateur
+  afficherUtilisateurParId
+)
 
 // Récupérer tous les utilisateurs
 router.get(
   '/utilisateurs',
-  // authMiddleware,
-  // adminMiddleware,
-  afficherUtilisateurs             // Utilisation du contrôleur importé (ajout de la route manquante)
-);
+  authMiddleware,
+  // adminMiddleware, // Décommentez si seulement les admins doivent voir tous les utilisateurs
+  afficherUtilisateurs
+)
 
-export default router;
+export default router
