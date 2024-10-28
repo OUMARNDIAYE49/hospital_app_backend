@@ -44,7 +44,7 @@ router.post(
 router.put(
   '/utilisateurs/:id',
   authMiddleware,
-  // adminMiddleware, // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
+  // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
   mettreAjourUtilisateurValidator,
   validate,
   mettreAjourUtilisateur

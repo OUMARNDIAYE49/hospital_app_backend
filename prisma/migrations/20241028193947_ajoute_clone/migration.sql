@@ -16,7 +16,7 @@ CREATE TABLE "utilisateurs" (
     "email" VARCHAR(50) NOT NULL,
     "password" VARCHAR(100) NOT NULL,
     "role" VARCHAR(100) NOT NULL,
-    "specialiteId" INTEGER,
+    "specialiteId" INTEGER NOT NULL,
 
     CONSTRAINT "utilisateurs_pkey" PRIMARY KEY ("id")
 );
@@ -24,12 +24,12 @@ CREATE TABLE "utilisateurs" (
 -- CreateTable
 CREATE TABLE "patients" (
     "id" SERIAL NOT NULL,
-    "nom" TEXT NOT NULL,
-    "prenom" TEXT NOT NULL,
-    "telephone" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+    "nom" VARCHAR(100) NOT NULL,
+    "prenom" VARCHAR(100) NOT NULL,
+    "telephone" VARCHAR(20) NOT NULL,
+    "email" VARCHAR(50) NOT NULL,
     "dateNaissance" TIMESTAMP(3) NOT NULL,
-    "adresse" TEXT,
+    "adresse" TEXT NOT NULL,
     "utilisateurId" INTEGER NOT NULL,
 
     CONSTRAINT "patients_pkey" PRIMARY KEY ("id")
@@ -38,8 +38,9 @@ CREATE TABLE "patients" (
 -- CreateTable
 CREATE TABLE "rendezVous" (
     "id" SERIAL NOT NULL,
-    "date" DATE NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
     "status" VARCHAR(50) NOT NULL,
+    "medecinId" INTEGER NOT NULL,
     "utilisateurId" INTEGER NOT NULL,
     "patientId" INTEGER NOT NULL,
 
@@ -47,22 +48,16 @@ CREATE TABLE "rendezVous" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "specialites_nom_key" ON "specialites"("nom");
-
--- CreateIndex
 CREATE UNIQUE INDEX "utilisateurs_email_key" ON "utilisateurs"("email");
 
--- CreateIndex
-CREATE UNIQUE INDEX "patients_telephone_key" ON "patients"("telephone");
-
--- CreateIndex
-CREATE UNIQUE INDEX "patients_email_key" ON "patients"("email");
-
 -- AddForeignKey
-ALTER TABLE "utilisateurs" ADD CONSTRAINT "utilisateurs_specialiteId_fkey" FOREIGN KEY ("specialiteId") REFERENCES "specialites"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "utilisateurs" ADD CONSTRAINT "utilisateurs_specialiteId_fkey" FOREIGN KEY ("specialiteId") REFERENCES "specialites"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "patients" ADD CONSTRAINT "patients_utilisateurId_fkey" FOREIGN KEY ("utilisateurId") REFERENCES "utilisateurs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "rendezVous" ADD CONSTRAINT "rendezVous_medecinId_fkey" FOREIGN KEY ("medecinId") REFERENCES "utilisateurs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "rendezVous" ADD CONSTRAINT "rendezVous_utilisateurId_fkey" FOREIGN KEY ("utilisateurId") REFERENCES "utilisateurs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

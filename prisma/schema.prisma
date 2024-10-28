@@ -13,57 +13,48 @@ enum role {
 }
 
 model specialites {
-  id   Int    @id @default(autoincrement()) // Auto-incremented primary key
-  nom  String @unique @db.VarChar(100) // Unique constraint on 'nom'
+  id          Int          @id @default(autoincrement())
+  nom         String       @db.VarChar(100)
 
-  // Relation avec utilisateurs
-  utilisateurs utilisateurs[]
+  utilisateurs utilisateurs[] // Relation avec utilisateurs
 }
 
-
 model utilisateurs {
-  id       Int    @id @default(autoincrement()) // Auto-incremented primary key
-  nom      String @db.VarChar(100)
-  email    String @unique @db.VarChar(50)
-  password String @db.VarChar(100)
-  role     String @db.VarChar(100)
+  id            Int           @id @default(autoincrement())
+  nom           String        @db.VarChar(100)
+  email         String        @unique @db.VarChar(50)
+  password      String        @db.VarChar(100)
+  role          String        @db.VarChar(100)
+  specialiteId  Int          // Clé étrangère vers specialites
+  specialite    specialites?  @relation(fields: [specialiteId], references: [id])
 
-  // Relation avec specialites
-  specialite   specialites? @relation(fields: [specialiteId], references: [id])
-  specialiteId Int?
-
-  // Relation avec patients
-  patients patients[]
-
-  // Relation avec rendezVous
-  rendezVous rendezVous[]
+  patients      patients[]    // Relation avec patients
+  rendezVous    rendezVous[]  @relation("UtilisateurRendezVous") // Relation avec rendezVous
+  rendezVousAsMedecin rendezVous[] @relation("MedecinRendezVous") // Relation avec rendezVous en tant que médecin
 }
 
 model patients {
- id           Int      @id @default(autoincrement())
-  nom          String
-  prenom       String
-  telephone    String   @unique // Contraint le champ `telephone` à être unique
-  email        String   @unique // Contraint le champ `email` à être unique
-  dateNaissance DateTime
-  adresse      String?
-  utilisateur  utilisateurs @relation(fields: [utilisateurId], references: [id])
-  utilisateurId Int
-  // Relation avec rendezVous
-  rendezVous rendezVous[]
+  id            Int           @id @default(autoincrement())
+  nom           String        @db.VarChar(100)
+  prenom        String        @db.VarChar(100)
+  telephone     String        @db.VarChar(20)
+  email         String        @db.VarChar(50)
+  dateNaissance DateTime     
+  adresse       String        @db.Text
+  utilisateurId Int          // Clé étrangère vers utilisateurs
+  utilisateur   utilisateurs @relation(fields: [utilisateurId], references: [id])
+
+  rendezVous    rendezVous[]  // Relation avec rendezVous
 }
 
 model rendezVous {
-  id     Int      @id @default(autoincrement()) // Auto-incremented primary key
-  date   DateTime @db.Date
-  // heure  DateTime @db.Time
-  status String   @db.VarChar(50)
-
-  // Relation avec utilisateurs (le praticien)
-  utilisateur   utilisateurs @relation(fields: [utilisateurId], references: [id])
-  utilisateurId Int
-
-  // Relation avec patients
-  patient   patients @relation(fields: [patientId], references: [id])
-  patientId Int
+  id             Int           @id @default(autoincrement())
+  date           DateTime
+  status         String        @db.VarChar(50)
+  medecinId      Int          // Clé étrangère vers utilisateurs (médecin)
+  utilisateurId  Int          // Clé étrangère vers utilisateurs (utilisateur)
+  patientId      Int          // Clé étrangère vers patients
+  medecin        utilisateurs  @relation("MedecinRendezVous", fields: [medecinId], references: [id])
+  utilisateur    utilisateurs  @relation("UtilisateurRendezVous", fields: [utilisateurId], references: [id])
+  patient        patients      @relation(fields: [patientId], references: [id])
 }
