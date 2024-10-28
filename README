@@ -1,0 +1,23 @@
+ABOUT:
+This project is an Express.js application that provides a set of API endpoints for managing users, patients, specialties, and appointments. The application includes middleware for authentication and admin authorization, ensuring secure access to protected routes.
+
+DESCRIPTION:
+This API server allows for the management of users, patients, specialties, and appointments in a healthcare system. It is built with Node.js and Express.js and uses environment variables for configuration. The server includes routes for logging in, managing users, patients, specialties, and appointments, as well as middleware for authentication and authorization.
+
+API Endpoints
+User Authentication
+  POST /api/login
+User Management
+  GET /api/users
+Patient Management
+  GET /api/patients
+  POST /api/patients
+Specialty Management
+  GET /api/specialties
+  POST /api/specialties
+
+Appointment Management
+  GET /api/appointments
+  POST /api/appointments
+
+To start the server, run the following command: npm start
