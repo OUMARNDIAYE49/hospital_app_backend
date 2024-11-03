@@ -1,31 +1,27 @@
 import prisma from '../config/database.js';
 
+// Contrôleur de gestion des rendez-vous
 const rendezVousController = {
-  // Créer un rendez-vous
+  // Créer un rendez-vous (ADMIN uniquement)
   createRendezVous: async (req, res) => {
     const { date, status, utilisateurId, patientId, medecinId } = req.body;
 
     try {
-      // Vérifier si l'utilisateur, le patient, et le médecin existent
+      // Vérifier si l'utilisateur, le patient et le médecin existent
       const utilisateur = await prisma.utilisateurs.findUnique({
         where: { id: utilisateurId }
       });
-      if (!utilisateur) {
-        return res.status(404).json({ message: 'Utilisateur non trouvé' });
-      }
-
       const patient = await prisma.patients.findUnique({
         where: { id: patientId }
       });
-      if (!patient) {
-        return res.status(404).json({ message: 'Patient non trouvé' });
-      }
-
       const medecin = await prisma.utilisateurs.findUnique({
         where: { id: medecinId }
       });
-      if (!medecin) {
-        return res.status(404).json({ message: 'Médecin non trouvé' });
+
+      if (!utilisateur || !patient || !medecin) {
+        return res.status(404).json({
+          message: `Un des identifiants fournis est incorrect : ${!utilisateur ? 'Utilisateur ' : ''}${!patient ? 'Patient ' : ''}${!medecin ? 'Médecin ' : ''}non trouvé.`
+        });
       }
 
       // Créer le rendez-vous
@@ -38,7 +34,7 @@ const rendezVousController = {
           medecin: { connect: { id: medecinId } }
         }
       });
-      
+
       return res.status(201).json({
         message: 'Rendez-vous créé avec succès',
         rendezvous: newRendezVous
@@ -52,7 +48,7 @@ const rendezVousController = {
     }
   },
 
-  // Mettre à jour un rendez-vous
+  // Mettre à jour un rendez-vous (ADMIN uniquement)
   updateRendezVous: async (req, res) => {
     const { id } = req.params;
     const { date, status, medecinId } = req.body;
@@ -75,7 +71,7 @@ const rendezVousController = {
           medecin: medecinId ? { connect: { id: medecinId } } : undefined
         }
       });
-      
+
       return res.status(200).json({
         message: 'Rendez-vous mis à jour avec succès',
         rendezvous: updatedRendezVous
@@ -89,7 +85,7 @@ const rendezVousController = {
     }
   },
 
-  // Supprimer un rendez-vous
+  // Supprimer un rendez-vous (ADMIN uniquement)
   deleteRendezVous: async (req, res) => {
     const { id } = req.params;
 
@@ -114,7 +110,7 @@ const rendezVousController = {
     }
   },
 
-  // Obtenir un rendez-vous par ID
+  // Obtenir un rendez-vous par ID (ADMIN ou MEDECIN)
   getRendezVousById: async (req, res) => {
     const { id } = req.params;
 
@@ -140,7 +136,7 @@ const rendezVousController = {
     }
   },
 
-  // Liste de tous les rendez-vous
+  // Liste de tous les rendez-vous (ADMIN ou MEDECIN)
   getAllRendezVous: async (req, res) => {
     try {
       const rendezVous = await prisma.rendezVous.findMany({

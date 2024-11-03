@@ -33,7 +33,7 @@ const validate = (req, res, next) => {
 // Créer un nouvel utilisateur
 router.post(
   '/utilisateurs',
-  authMiddleware,
+  // authMiddleware,
   // adminMiddleware, // Utilisez ceci pour restreindre la création à des utilisateurs avec le rôle ADMIN
   creerUtilisateurValidator,
   validate,
@@ -43,7 +43,7 @@ router.post(
 // Mettre à jour un utilisateur existant
 router.put(
   '/utilisateurs/:id',
-  authMiddleware,
+  // authMiddleware,
   // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
   mettreAjourUtilisateurValidator,
   validate,
@@ -53,8 +53,8 @@ router.put(
 // Supprimer un utilisateur
 router.delete(
   '/utilisateurs/:id',
-  authMiddleware,
-  adminMiddleware, // Assurez-vous que les administrateurs peuvent supprimer les utilisateurs
+  // authMiddleware,
+  // adminMiddleware, // Assurez-vous que les administrateurs peuvent supprimer les utilisateurs
   supprimerUtilisateurValidator,
   validate,
   supprimerUtilisateur
@@ -71,7 +71,7 @@ router.get(
 // Récupérer tous les utilisateurs
 router.get(
   '/utilisateurs',
-  authMiddleware,
+  // authMiddleware,
   // adminMiddleware, // Décommentez si seulement les admins doivent voir tous les utilisateurs
   afficherUtilisateurs
 )

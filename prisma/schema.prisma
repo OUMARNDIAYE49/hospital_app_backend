@@ -14,7 +14,7 @@ enum role {
 
 model specialites {
   id          Int          @id @default(autoincrement())
-  nom         String       @db.VarChar(100)
+  nom         String       @unique @db.VarChar(100)
 
   utilisateurs utilisateurs[] // Relation avec utilisateurs
 }
@@ -37,8 +37,8 @@ model patients {
   id            Int           @id @default(autoincrement())
   nom           String        @db.VarChar(100)
   prenom        String        @db.VarChar(100)
-  telephone     String        @db.VarChar(20)
-  email         String        @db.VarChar(50)
+  telephone     String        @unique @db.VarChar(20)
+  email         String        @unique @db.VarChar(50)
   dateNaissance DateTime     
   adresse       String        @db.Text
   utilisateurId Int          // Clé étrangère vers utilisateurs

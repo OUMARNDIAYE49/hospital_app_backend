@@ -7,6 +7,7 @@ import {
   deleteRendezVous
 } from '../validators/rendezVousValidator.js'
 import { validationResult } from 'express-validator'
+import { authMiddleware, adminMiddleware, medecinMiddleware } from '../middlewares/authentification.js'
 
 const router = express.Router()
 
@@ -19,35 +20,54 @@ const validate = (req, res, next) => {
   next()
 }
 
-// Routes pour les rendez-vous avec le préfixe /rendezvous
-router.post(
+// Routes pour les rendez-vous avec les autorisations et les validations
+
+// Route pour obtenir tous les rendez-vous (ADMIN et MEDECIN)
+router.get(
   '/rendezvous',
-  createRendezVous,
-  validate,
-  rendezVousController.createRendezVous
+  // authMiddleware,
+  // medecinMiddleware, // Accessible pour les MEDECIN et ADMIN
+  rendezVousController.getAllRendezVous
 )
 
-router.put(
-  '/rendezvous/:id',
-  updateRendezVous,
-  validate,
-  rendezVousController.updateRendezVous
-)
-
-router.delete(
-  '/rendezvous/:id',
-  deleteRendezVous,
-  validate,
-  rendezVousController.deleteRendezVous
-)
-
+// Route pour obtenir un rendez-vous par ID (ADMIN et MEDECIN)
 router.get(
   '/rendezvous/:id',
-  getRendezVousById,
+  // authMiddleware,
+  // medecinMiddleware, // Accessible pour les MEDECIN et ADMIN
+  getRendezVousById, // Validation des données
   validate,
   rendezVousController.getRendezVousById
 )
 
-router.get('/rendezvous', rendezVousController.getAllRendezVous)
+// Route pour créer un rendez-vous (ADMIN seulement)
+router.post(
+  '/rendezvous',
+  // authMiddleware,
+  // adminMiddleware, // Restriction pour les ADMIN uniquement
+  createRendezVous, // Validation des données
+  validate,
+  rendezVousController.createRendezVous
+)
+
+// Route pour mettre à jour un rendez-vous (ADMIN seulement)
+router.put(
+  '/rendezvous/:id',
+  // authMiddleware,
+  // adminMiddleware, // Restriction pour les ADMIN uniquement
+  updateRendezVous, // Validation des données
+  validate,
+  rendezVousController.updateRendezVous
+)
+
+// Route pour supprimer un rendez-vous (ADMIN seulement)
+router.delete(
+  '/rendezvous/:id',
+  authMiddleware,
+  adminMiddleware, // Restriction pour les ADMIN uniquement
+  deleteRendezVous, // Validation des données
+  validate,
+  rendezVousController.deleteRendezVous
+)
 
 export default router

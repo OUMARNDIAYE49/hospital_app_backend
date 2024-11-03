@@ -15,7 +15,7 @@ const authMiddleware = (req, res, next) => {
     req.utilisateur = decoded
     next()
   } catch {
-    return res.status(400).json({ message: 'Token invalide.' }) // Pas besoin de `error` ici
+    return res.status(400).json({ message: 'Token invalide.' })
   }
 }
 
@@ -29,4 +29,13 @@ const adminMiddleware = (req, res, next) => {
   next()
 }
 
-export { authMiddleware, adminMiddleware }
+// Middleware pour vérifier les permissions de MEDECIN
+const medecinMiddleware = (req, res, next) => {
+  if (req.utilisateur.role === 'MEDECIN') {
+    // Ajoute la restriction pour n'afficher que les rendez-vous de ce médecin
+    req.restrictionMedecin = { utilisateurId: req.utilisateur.utilisateurId }
+  }
+  next()
+}
+
+export { authMiddleware, adminMiddleware, medecinMiddleware }
