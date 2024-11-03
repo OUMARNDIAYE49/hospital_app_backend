@@ -5,34 +5,32 @@ import { Prisma } from '@prisma/client'
 const createPatient = async (req, res) => {
   const {
     nom,
-    prenom,
     telephone,
     email,
-    dateNaissance,
+    date_naissance, // Utilisation de date_naissance
     adresse,
-    utilisateurId
+    admin_id // Utilisation de admin_id
   } = req.body
 
   try {
-    const utilisateur = await prisma.utilisateurs.findUnique({
-      where: { id: utilisateurId }
+    const admin = await prisma.utilisateurs.findUnique({
+      where: { id: admin_id }
     })
 
-    if (!utilisateur) {
+    if (!admin) {
       return res
         .status(404)
-        .json({ message: "L'utilisateur spécifié n'existe pas." })
+        .json({ message: "L'administrateur spécifié n'existe pas." })
     }
 
     const newPatient = await prisma.patients.create({
       data: {
         nom,
-        prenom,
         telephone,
         email,
-        dateNaissance: new Date(dateNaissance),
+        date_naissance: new Date(date_naissance), // Utilisation de date_naissance
         adresse,
-        utilisateur: { connect: { id: utilisateurId } }
+        admin: { connect: { id: admin_id } } // Utilisation de admin_id
       }
     })
 
@@ -62,17 +60,16 @@ const createPatient = async (req, res) => {
 // Fonction pour mettre à jour un patient
 const updatePatient = async (req, res) => {
   const { id } = req.params
-  const { nom, prenom, telephone, email, dateNaissance, adresse } = req.body
+  const { nom, telephone, email, date_naissance, adresse } = req.body
 
   try {
     const updatedPatient = await prisma.patients.update({
       where: { id: parseInt(id) },
       data: {
         nom,
-        prenom,
         telephone,
         email,
-        dateNaissance: new Date(dateNaissance),
+        date_naissance: new Date(date_naissance), // Utilisation de date_naissance
         adresse
       }
     })

@@ -7,54 +7,57 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum role {
+enum Role {
   ADMIN
   MEDECIN
 }
 
-model specialites {
-  id          Int          @id @default(autoincrement())
-  nom         String       @unique @db.VarChar(100)
-
-  utilisateurs utilisateurs[] // Relation avec utilisateurs
-}
-
-model utilisateurs {
-  id            Int           @id @default(autoincrement())
-  nom           String        @db.VarChar(100)
-  email         String        @unique @db.VarChar(50)
-  password      String        @db.VarChar(100)
-  role          String        @db.VarChar(100)
-  specialiteId  Int          // Clé étrangère vers specialites
-  specialite    specialites?  @relation(fields: [specialiteId], references: [id])
-
-  patients      patients[]    // Relation avec patients
-  rendezVous    rendezVous[]  @relation("UtilisateurRendezVous") // Relation avec rendezVous
-  rendezVousAsMedecin rendezVous[] @relation("MedecinRendezVous") // Relation avec rendezVous en tant que médecin
-}
-
 model patients {
-  id            Int           @id @default(autoincrement())
-  nom           String        @db.VarChar(100)
-  prenom        String        @db.VarChar(100)
-  telephone     String        @unique @db.VarChar(20)
-  email         String        @unique @db.VarChar(50)
-  dateNaissance DateTime     
-  adresse       String        @db.Text
-  utilisateurId Int          // Clé étrangère vers utilisateurs
-  utilisateur   utilisateurs @relation(fields: [utilisateurId], references: [id])
+  id             Int         @id @default(autoincrement())
+  nom            String      @db.VarChar(100)
+  telephone      String      @db.VarChar(20) @unique
+  email          String      @db.VarChar(50) @unique
+  date_naissance DateTime    // Utilisation de DateTime pour la date de naissance
+  adresse        String      @db.Text
+  admin_id       Int?
 
-  rendezVous    rendezVous[]  // Relation avec rendezVous
+  rendezVous     rendezVous[]
+  admin          utilisateurs? @relation("AdminPatient", fields: [admin_id], references: [id])
 }
 
 model rendezVous {
-  id             Int           @id @default(autoincrement())
-  date           DateTime
-  status         String        @db.VarChar(50)
-  medecinId      Int          // Clé étrangère vers utilisateurs (médecin)
-  utilisateurId  Int          // Clé étrangère vers utilisateurs (utilisateur)
-  patientId      Int          // Clé étrangère vers patients
-  medecin        utilisateurs  @relation("MedecinRendezVous", fields: [medecinId], references: [id])
-  utilisateur    utilisateurs  @relation("UtilisateurRendezVous", fields: [utilisateurId], references: [id])
-  patient        patients      @relation(fields: [patientId], references: [id])
+  id           Int           @id @default(autoincrement())
+  date         DateTime      // Champ DateTime pour la date du rendez-vous
+  status       String        @db.VarChar(50)
+  patient_id   Int
+  medecin_id   Int
+  admin_id     Int?
+
+  patient      patients      @relation(fields: [patient_id], references: [id])
+  medecin      utilisateurs  @relation("MedecinRendezVous", fields: [medecin_id], references: [id])
+  admin        utilisateurs? @relation("AdminRendezVous", fields: [admin_id], references: [id])
+}
+
+model specialites {
+  id       Int             @id @default(autoincrement())
+  nom      String          @db.VarChar(100) @unique
+  admin_id Int?
+
+  utilisateurs utilisateurs[]
+  admin        utilisateurs? @relation("AdminSpecialite", fields: [admin_id], references: [id])
+}
+
+model utilisateurs {
+  id               Int             @id @default(autoincrement())
+  nom              String          @db.VarChar(100)
+  email            String          @db.VarChar(50) @unique
+  password         String          @db.VarChar(100)
+  role             Role
+  specialite_id    Int?
+
+  patients_as_admin    patients[]       @relation("AdminPatient")
+  rendezVous_as_medecin rendezVous[]    @relation("MedecinRendezVous")
+  rendezVous_as_admin   rendezVous[]    @relation("AdminRendezVous")
+  specialite            specialites?    @relation(fields: [specialite_id], references: [id])
+  specialites_as_admin  specialites[]   @relation("AdminSpecialite")
 }

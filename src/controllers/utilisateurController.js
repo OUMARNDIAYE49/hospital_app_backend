@@ -10,7 +10,7 @@ const handleServerError = (res, message, error) => {
 
 export const creerUtilisateur = async (req, res) => {
   try {
-    const { nom, email, role, password, specialiteId } = req.body; // Ajout de specialiteId
+    const { nom, email, role, password, specialite_id } = req.body; // Ajout de specialiteId
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const utilisateurExistant = await prisma.utilisateurs.findUnique({
@@ -21,13 +21,28 @@ export const creerUtilisateur = async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
+    // Vérification que specialite_Id est présent pour le rôle MEDECIN
+    if (role === 'MEDECIN' && !specialite_id) {
+      return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
+    }
+
+    // Vérifier si la spécialité existe
+    if (role === 'MEDECIN') {
+      const specialiteExistante = await prisma.specialites.findUnique({
+        where: { id: specialite_id },
+      });
+      if (!specialiteExistante) {
+        return res.status(404).json({ message: 'La spécialité spécifiée n\'existe pas' });
+      }
+    }
+
     const nouvelUtilisateur = await prisma.utilisateurs.create({
       data: {
         nom,
         email,
         role: role === 'ADMIN' ? 'ADMIN' : 'MEDECIN',
         password: hashedPassword,
-        specialiteId, // Ajout de specialiteId dans la création
+        specialite: role === 'MEDECIN' ? { connect: { id: specialite_id } } : undefined,
       },
     });
 
@@ -68,20 +83,9 @@ export const afficherUtilisateurParId = async (req, res) => {
 
 export const mettreAjourUtilisateur = async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const { nom, email, role, password, specialiteId } = req.body; // Ajout de specialiteId
+  const { nom, email, role, password, specialite_id } = req.body; // Ajout de specialiteId
 
   try {
-    const dataToUpdate = {
-      nom,
-      email,
-      role: role === 'ADMIN' ? 'ADMIN' : 'MEDECIN',
-      specialiteId, // Ajout de specialiteId dans les données de mise à jour
-    };
-
-    if (password) {
-      dataToUpdate.password = await bcrypt.hash(password, 10);
-    }
-
     const utilisateurExist = await prisma.utilisateurs.findUnique({
       where: { id },
     });
@@ -96,6 +100,32 @@ export const mettreAjourUtilisateur = async (req, res) => {
 
     if (emailExistant && emailExistant.id !== id) {
       return res.status(400).json({ message: 'Email déjà utilisé' });
+    }
+
+    // Vérification si specialite_Id est fourni pour le rôle MEDECIN
+    if (role === 'MEDECIN' && !specialite_id) {
+      return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
+    }
+
+    // Vérifier si la spécialité existe lors de la mise à jour
+    if (role === 'MEDECIN') {
+      const specialiteExistante = await prisma.specialites.findUnique({
+        where: { id: specialite_id },
+      });
+      if (!specialiteExistante) {
+        return res.status(404).json({ message: 'La spécialité spécifiée n\'existe pas' });
+      }
+    }
+
+    const dataToUpdate = {
+      nom,
+      email,
+      role: role === 'ADMIN' ? 'ADMIN' : 'MEDECIN',
+      specialite: role === 'MEDECIN' ? { connect: { id: specialite_id } } : undefined, // Connecter la spécialité si MEDECIN
+    };
+
+    if (password) {
+      dataToUpdate.password = await bcrypt.hash(password, 10);
     }
 
     const utilisateurMisAJour = await prisma.utilisateurs.update({
