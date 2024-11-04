@@ -9,19 +9,19 @@ const createPatient = async (req, res) => {
     email,
     date_naissance, // Utilisation de date_naissance
     adresse,
-    admin_id // Utilisation de admin_id
+   
   } = req.body
 
   try {
-    const admin = await prisma.utilisateurs.findUnique({
-      where: { id: admin_id }
-    })
+    // const admin = await prisma.utilisateurs.findUnique({
+    //   where: { id: admin_id }
+    // })
 
-    if (!admin) {
-      return res
-        .status(404)
-        .json({ message: "L'administrateur spécifié n'existe pas." })
-    }
+    // if (!admin) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "L'administrateur spécifié n'existe pas." })
+    // }
 
     const newPatient = await prisma.patients.create({
       data: {
@@ -30,7 +30,7 @@ const createPatient = async (req, res) => {
         email,
         date_naissance: new Date(date_naissance), // Utilisation de date_naissance
         adresse,
-        admin: { connect: { id: admin_id } } // Utilisation de admin_id
+        // admin: { connect: { id: admin_id } } // Utilisation de admin_id
       }
     })
 

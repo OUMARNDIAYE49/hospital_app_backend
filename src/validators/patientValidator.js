@@ -32,11 +32,7 @@ export const createPatient = [
     .optional()
     .isLength({ max: 255 })
     .withMessage("L'adresse ne doit pas dépasser 255 caractères"),
-  body('admin_id') // Validation pour admin_id
-    .notEmpty()
-    .withMessage("L'ID de l'administrateur est obligatoire")
-    .isInt()
-    .withMessage("L'ID de l'administrateur doit être un entier")
+ 
 ]
 
 // Validation pour la mise à jour d'un patient
@@ -65,10 +61,10 @@ export const updatePatient = [
     .optional()
     .isLength({ max: 255 })
     .withMessage("L'adresse ne doit pas dépasser 255 caractères"),
-  body('admin_id') // Validation pour admin_id
-    .optional()
-    .isInt()
-    .withMessage("L'ID de l'administrateur doit être un entier")
+  // body('admin_id') // Validation pour admin_id
+  //   .optional()
+  //   .isInt()
+  //   .withMessage("L'ID de l'administrateur doit être un entier")
 ]
 
 // Validation pour obtenir un patient par ID

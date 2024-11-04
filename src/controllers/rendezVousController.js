@@ -4,13 +4,13 @@ import prisma from '../config/database.js';
 const rendezVousController = {
   // Créer un rendez-vous (ADMIN uniquement)
   createRendezVous: async (req, res) => {
-    const { date, status, admin_id, patient_id, medecin_id } = req.body;
+    const { date, status, patient_id, medecin_id } = req.body;
 
     try {
       // Vérifier si l'utilisateur, le patient et le médecin existent
-      const admin = await prisma.utilisateurs.findUnique({
-        where: { id: admin_id }
-      });
+      // const admin = await prisma.utilisateurs.findUnique({
+      //   where: { id: admin_id }
+      // });
       const patient = await prisma.patients.findUnique({
         where: { id: patient_id }
       });
@@ -18,9 +18,9 @@ const rendezVousController = {
         where: { id: medecin_id }
       });
 
-      if (!admin || !patient || !medecin) {
+      if (!patient || !medecin) {
         return res.status(404).json({
-          message: `Un des identifiants fournis est incorrect : ${!admin ? 'Administrateur ' : ''}${!patient ? 'Patient ' : ''}${!medecin ? 'Médecin ' : ''}non trouvé.`
+          message: `Un des identifiants fournis est incorrect : ${!patient ? 'Patient ' : ''}${!medecin ? 'Médecin ' : ''}non trouvé.`
         });
       }
 
@@ -29,7 +29,7 @@ const rendezVousController = {
         data: {
           date: new Date(date),
           status,
-          admin: { connect: { id: admin_id } },
+          // admin: { connect: { id: admin_id } },
           patient: { connect: { id: patient_id } },
           medecin: { connect: { id: medecin_id } }
         }

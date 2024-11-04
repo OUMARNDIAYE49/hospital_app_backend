@@ -10,9 +10,10 @@ const handleServerError = (res, message, error) => {
 
 export const creerUtilisateur = async (req, res) => {
   try {
-    const { nom, email, role, password, specialite_id } = req.body; // Ajout de specialiteId
+    const { nom, email, role, password } = req.body; // Suppression de specialite_id ici
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Vérifier si l'email existe déjà
     const utilisateurExistant = await prisma.utilisateurs.findUnique({
       where: { email },
     });
@@ -21,13 +22,23 @@ export const creerUtilisateur = async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
-    // Vérification que specialite_Id est présent pour le rôle MEDECIN
-    if (role === 'MEDECIN' && !specialite_id) {
-      return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
-    }
+    // Définir specialite_id en fonction du rôle
+    let specialite_id;
+    if (role === 'ADMIN') {
+      // Trouver l'ID de la spécialité "secrétaire" pour ADMIN
+      const specialiteSecretaire = await prisma.specialites.findUnique({
+        where: { nom: 'secrétaire' },
+      });
+      if (!specialiteSecretaire) {
+        return res.status(404).json({ message: 'La spécialité "secrétaire" n\'existe pas' });
+      }
+      specialite_id = specialiteSecretaire.id;
+    } else if (role === 'MEDECIN') {
+      specialite_id = req.body.specialite_id; // Spécialité fournie pour MEDECIN
+      if (!specialite_id) {
+        return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
+      }
 
-    // Vérifier si la spécialité existe
-    if (role === 'MEDECIN') {
       const specialiteExistante = await prisma.specialites.findUnique({
         where: { id: specialite_id },
       });
@@ -40,9 +51,9 @@ export const creerUtilisateur = async (req, res) => {
       data: {
         nom,
         email,
-        role: role === 'ADMIN' ? 'ADMIN' : 'MEDECIN',
+        role,
         password: hashedPassword,
-        specialite: role === 'MEDECIN' ? { connect: { id: specialite_id } } : undefined,
+        specialite: specialite_id ? { connect: { id: specialite_id } } : undefined,
       },
     });
 
@@ -83,7 +94,7 @@ export const afficherUtilisateurParId = async (req, res) => {
 
 export const mettreAjourUtilisateur = async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const { nom, email, role, password, specialite_id } = req.body; // Ajout de specialiteId
+  const { nom, email, role, password } = req.body; // Suppression de specialite_id ici
 
   try {
     const utilisateurExist = await prisma.utilisateurs.findUnique({
@@ -102,13 +113,22 @@ export const mettreAjourUtilisateur = async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
-    // Vérification si specialite_Id est fourni pour le rôle MEDECIN
-    if (role === 'MEDECIN' && !specialite_id) {
-      return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
-    }
+    // Définir specialite_id en fonction du rôle
+    let specialite_id;
+    if (role === 'ADMIN') {
+      const specialiteSecretaire = await prisma.specialites.findUnique({
+        where: { nom: 'secrétaire' },
+      });
+      if (!specialiteSecretaire) {
+        return res.status(404).json({ message: 'La spécialité "secrétaire" n\'existe pas' });
+      }
+      specialite_id = specialiteSecretaire.id;
+    } else if (role === 'MEDECIN') {
+      specialite_id = req.body.specialite_id; // Spécialité fournie pour MEDECIN
+      if (!specialite_id) {
+        return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
+      }
 
-    // Vérifier si la spécialité existe lors de la mise à jour
-    if (role === 'MEDECIN') {
       const specialiteExistante = await prisma.specialites.findUnique({
         where: { id: specialite_id },
       });
@@ -120,8 +140,8 @@ export const mettreAjourUtilisateur = async (req, res) => {
     const dataToUpdate = {
       nom,
       email,
-      role: role === 'ADMIN' ? 'ADMIN' : 'MEDECIN',
-      specialite: role === 'MEDECIN' ? { connect: { id: specialite_id } } : undefined, // Connecter la spécialité si MEDECIN
+      role,
+      specialite: specialite_id ? { connect: { id: specialite_id } } : undefined,
     };
 
     if (password) {

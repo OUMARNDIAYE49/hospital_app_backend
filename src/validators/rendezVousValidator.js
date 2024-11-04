@@ -2,26 +2,26 @@ import { body, param } from 'express-validator';
 
 // Validation pour la création d'un rendez-vous
 export const createRendezVous = [
-  body('patient_id')
-    .isInt()
-    .withMessage('ID du patient invalide'),
-  body('medecin_id')
-    .isInt()
-    .withMessage('ID du médecin invalide'),
-  body('admin_id')
-    .optional()
-    .isInt()
-    .withMessage("ID de l'utilisateur invalide"),
+  // body('patient_id')
+  //   .isInt()
+  //   .withMessage('ID du patient invalide'),
+  // body('medecin_id')
+  //   .isInt()
+  //   .withMessage('ID du médecin invalide'),
+  // body('admin_id')
+  //   .optional()
+  //   .isInt()
+  //   .withMessage("ID de l'utilisateur invalide"),
   body('date')
     .isISO8601()
     .withMessage('La date du rendez-vous doit être au format valide'),
   body('status')
     .notEmpty()
     .withMessage('Le statut du rendez-vous est obligatoire')
-    .isIn(['en attente', 'confirmé', 'annulé'])
-    .withMessage(
-      "Le statut doit être l'un des suivants : en attente, confirmé, annulé"
-    )
+    // .isIn(['en attente', 'confirmé', 'annulé'])
+    // .withMessage(
+    //   "Le statut doit être l'un des suivants : en attente, confirmé, annulé"
+    // )
 ];
 
 // Validation pour la mise à jour d'un rendez-vous
