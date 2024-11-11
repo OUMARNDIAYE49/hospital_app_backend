@@ -93,6 +93,7 @@ const updatePatient = async (req, res) => {
 }
 
 // Fonction pour supprimer un patient
+// Fonction pour supprimer un patient
 const deletePatient = async (req, res) => {
   const { id } = req.params
 
@@ -111,12 +112,21 @@ const deletePatient = async (req, res) => {
 
     return res.status(200).json({ message: 'Patient supprimé avec succès' })
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2003'
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Impossible de supprimer ce patient car il est associé à d'autres enregistrements." })
+    }
     console.error(error)
     return res
       .status(500)
       .json({ message: 'Erreur lors de la suppression du patient' })
   }
 }
+
 
 // Fonction pour obtenir un patient par ID
 const getPatientById = async (req, res) => {

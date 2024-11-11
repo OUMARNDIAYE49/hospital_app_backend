@@ -17,7 +17,7 @@ model patients {
   nom            String      @db.VarChar(100)
   telephone      String      @db.VarChar(20) @unique
   email          String      @db.VarChar(50) @unique
-  date_naissance DateTime    // Utilisation de DateTime pour la date de naissance
+  date_naissance DateTime
   adresse        String      @db.Text
   admin_id       Int?
 
@@ -27,16 +27,19 @@ model patients {
 
 model rendezVous {
   id           Int           @id @default(autoincrement())
-  date         DateTime      // Champ DateTime pour la date du rendez-vous
   status       String        @db.VarChar(50)
   patient_id   Int
   medecin_id   Int
   admin_id     Int?
 
+  date_debut   DateTime      @default(now())
+  date_fin     DateTime      @default(now())
+
   patient      patients      @relation(fields: [patient_id], references: [id])
   medecin      utilisateurs  @relation("MedecinRendezVous", fields: [medecin_id], references: [id])
   admin        utilisateurs? @relation("AdminRendezVous", fields: [admin_id], references: [id])
 }
+
 
 model specialites {
   id       Int             @id @default(autoincrement())

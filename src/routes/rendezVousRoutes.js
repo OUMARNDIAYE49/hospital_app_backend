@@ -43,8 +43,8 @@ router.get(
 // Route pour créer un rendez-vous (ADMIN seulement)
 router.post(
   '/rendezvous',
-  // authMiddleware,
-  // adminMiddleware, // Restriction pour les ADMIN uniquement
+  authMiddleware,
+  adminMiddleware, // Restriction pour les ADMIN uniquement
   createRendezVous, // Validation des données
   validate,
   rendezVousController.createRendezVous
@@ -53,8 +53,8 @@ router.post(
 // Route pour mettre à jour un rendez-vous (ADMIN seulement)
 router.put(
   '/rendezvous/:id',
-  // authMiddleware,
-  // adminMiddleware, // Restriction pour les ADMIN uniquement
+  authMiddleware,
+  adminMiddleware, // Restriction pour les ADMIN uniquement
   updateRendezVous, // Validation des données
   validate,
   rendezVousController.updateRendezVous

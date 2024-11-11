@@ -7,9 +7,10 @@ import {
   deleteSpecialite
 } from '../validators/specialiteValidator.js';
 import { validationResult } from 'express-validator';
-import { authMiddleware, adminMiddleware } from '../middlewares/authentification.js';
+import { authMiddleware, medecinMiddleware,  adminMiddleware } from '../middlewares/authentification.js';
 
 const router = express.Router();
+
 
 // Fonction de validation des erreurs
 const validate = (req, res, next) => {
@@ -23,8 +24,9 @@ const validate = (req, res, next) => {
 // Routes pour les spécialités avec le préfixe /specialites (accès restreint aux administrateurs)
 router.post(
   '/specialites',
-  // authMiddleware,        // Authentification requise
-  // adminMiddleware,       // Accès réservé aux administrateurs
+  authMiddleware,        // Authentification requise
+  adminMiddleware,       // Accès réservé aux administrateurs
+  // medecinMiddleware,
   createSpecialite,
   validate,
   specialiteController.createSpecialite
@@ -32,8 +34,9 @@ router.post(
 
 router.put(
   '/specialites/:id',
-  // authMiddleware,        // Authentification requise
-  // adminMiddleware,       // Accès réservé aux administrateurs
+  authMiddleware,        // Authentification requise
+  adminMiddleware,       // Accès réservé aux administrateurs
+  // medecinMiddleware,
   updateSpecialite,
   validate,
   specialiteController.updateSpecialite
@@ -41,8 +44,9 @@ router.put(
 
 router.delete(
   '/specialites/:id',
-  // authMiddleware,        // Authentification requise
-  // adminMiddleware,       // Accès réservé aux administrateurs
+  authMiddleware,        // Authentification requise
+  adminMiddleware,       // Accès réservé aux administrateurs
+  // medecinMiddleware,
   deleteSpecialite,
   validate,
   specialiteController.deleteSpecialite
@@ -50,8 +54,9 @@ router.delete(
 
 router.get(
   '/specialites/:id',
-  // authMiddleware,        // Authentification requise
-  // adminMiddleware,       // Accès réservé aux administrateurs
+  authMiddleware,        // Authentification requise
+  // medecinMiddleware,
+  adminMiddleware,       // Accès réservé aux administrateurs
   getSpecialiteById,
   validate,
   specialiteController.getSpecialiteById
@@ -59,8 +64,9 @@ router.get(
 
 router.get(
   '/specialites',
-  // authMiddleware,        // Authentification requise
-  // adminMiddleware,       // Accès réservé aux administrateurs
+  authMiddleware,        // Authentification requise
+  // medecinMiddleware,
+  adminMiddleware,       // Accès réservé aux administrateurs
   specialiteController.getSpecialites
 );
 

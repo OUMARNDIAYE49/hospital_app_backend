@@ -4,13 +4,10 @@ import prisma from '../config/database.js';
 const rendezVousController = {
   // Créer un rendez-vous (ADMIN uniquement)
   createRendezVous: async (req, res) => {
-    const { date, status, patient_id, medecin_id } = req.body;
+    const { date_debut, date_fin, status, patient_id, medecin_id } = req.body;
 
     try {
-      // Vérifier si l'utilisateur, le patient et le médecin existent
-      // const admin = await prisma.utilisateurs.findUnique({
-      //   where: { id: admin_id }
-      // });
+      // Vérifier si le patient et le médecin existent
       const patient = await prisma.patients.findUnique({
         where: { id: patient_id }
       });
@@ -27,9 +24,9 @@ const rendezVousController = {
       // Créer le rendez-vous
       const newRendezVous = await prisma.rendezVous.create({
         data: {
-          date: new Date(date),
+          date_debut: new Date(date_debut),
+          date_fin: new Date(date_fin),
           status,
-          // admin: { connect: { id: admin_id } },
           patient: { connect: { id: patient_id } },
           medecin: { connect: { id: medecin_id } }
         }
@@ -51,7 +48,7 @@ const rendezVousController = {
   // Mettre à jour un rendez-vous (ADMIN uniquement)
   updateRendezVous: async (req, res) => {
     const { id } = req.params;
-    const { date, status, medecin_id } = req.body;
+    const { date_debut, date_fin, status, medecin_id, patient_id } = req.body;
 
     try {
       // Vérifier si le rendez-vous existe
@@ -62,12 +59,31 @@ const rendezVousController = {
         return res.status(404).json({ message: 'Rendez-vous non trouvé' });
       }
 
+      // Vérifier si le patient et le médecin existent
+      const patient = patient_id ? await prisma.patients.findUnique({
+        where: { id: patient_id }
+      }) : null;
+
+      const medecin = medecin_id ? await prisma.utilisateurs.findUnique({
+        where: { id: medecin_id }
+      }) : null;
+
+      if (patient_id && !patient) {
+        return res.status(404).json({ message: 'Patient non trouvé' });
+      }
+
+      if (medecin_id && !medecin) {
+        return res.status(404).json({ message: 'Médecin non trouvé' });
+      }
+
       // Mettre à jour le rendez-vous
       const updatedRendezVous = await prisma.rendezVous.update({
         where: { id: parseInt(id) },
         data: {
-          date: date ? new Date(date) : undefined,
+          date_debut: date_debut ? new Date(date_debut) : existingRendezVous.date_debut,
+          date_fin: date_fin ? new Date(date_fin) : existingRendezVous.date_fin,
           status: status || existingRendezVous.status,
+          patient: patient_id ? { connect: { id: patient_id } } : undefined,
           medecin: medecin_id ? { connect: { id: medecin_id } } : undefined
         }
       });
@@ -118,7 +134,7 @@ const rendezVousController = {
       const rendezVous = await prisma.rendezVous.findUnique({
         where: { id: parseInt(id) },
         include: {
-          admin: true, // Inclure l'administrateur
+          admin: true,
           patient: true,
           medecin: true
         }
@@ -141,7 +157,7 @@ const rendezVousController = {
     try {
       const rendezVous = await prisma.rendezVous.findMany({
         include: {
-          admin: true, // Inclure l'administrateur
+          admin: true,
           patient: true,
           medecin: true
         }

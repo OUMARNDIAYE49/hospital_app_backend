@@ -12,8 +12,7 @@ import {
   supprimerUtilisateurValidator
 } from '../validators/UtilisateurValidator.js'
 import {
-  authMiddleware,
-  adminMiddleware
+  authMiddleware, adminMiddleware, medecinMiddleware,
 } from '../middlewares/authentification.js'
 import { validationResult } from 'express-validator'
 
@@ -33,8 +32,9 @@ const validate = (req, res, next) => {
 // Créer un nouvel utilisateur
 router.post(
   '/utilisateurs',
-  // authMiddleware,
-  // adminMiddleware, // Utilisez ceci pour restreindre la création à des utilisateurs avec le rôle ADMIN
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware, // Utilisez ceci pour restreindre la création à des utilisateurs avec le rôle ADMIN
   creerUtilisateurValidator,
   validate,
   creerUtilisateur
@@ -43,8 +43,9 @@ router.post(
 // Mettre à jour un utilisateur existant
 router.put(
   '/utilisateurs/:id',
-  // authMiddleware,
-  // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware, // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
   mettreAjourUtilisateurValidator,
   validate,
   mettreAjourUtilisateur
@@ -53,8 +54,9 @@ router.put(
 // Supprimer un utilisateur
 router.delete(
   '/utilisateurs/:id',
-  // authMiddleware,
-  // adminMiddleware, // Assurez-vous que les administrateurs peuvent supprimer les utilisateurs
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware, // Assurez-vous que les administrateurs peuvent supprimer les utilisateurs
   supprimerUtilisateurValidator,
   validate,
   supprimerUtilisateur
@@ -63,16 +65,18 @@ router.delete(
 // Récupérer un utilisateur par ID
 router.get(
   '/utilisateurs/:id',
-  // authMiddleware,
-  // adminMiddleware, // Décommentez si seulement les admins doivent voir les détails d'un utilisateur
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware, // Décommentez si seulement les admins doivent voir les détails d'un utilisateur
   afficherUtilisateurParId
 )
 
 // Récupérer tous les utilisateurs
 router.get(
   '/utilisateurs',
-  // authMiddleware,
-  // adminMiddleware, // Décommentez si seulement les admins doivent voir tous les utilisateurs
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware, // Décommentez si seulement les admins doivent voir tous les utilisateurs
   afficherUtilisateurs
 )
 

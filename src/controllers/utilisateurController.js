@@ -179,6 +179,12 @@ export const supprimerUtilisateur = async (req, res) => {
 
     return res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
   } catch (error) {
+    if (error.code === 'P2003') {
+      // Code d'erreur pour contrainte de clé étrangère violée
+      return res.status(400).json({
+        message: 'Impossible de supprimer cet utilisateur car il est lié à d’autres enregistrements.',
+      });
+    }
     return handleServerError(res, 'Erreur lors de la suppression de l’utilisateur', error);
   }
 };
