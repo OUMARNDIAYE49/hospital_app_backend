@@ -4,7 +4,8 @@ import {
   afficherUtilisateurParId,
   afficherUtilisateurs,
   supprimerUtilisateur,
-  mettreAjourUtilisateur
+  mettreAjourUtilisateur,
+  updateCurentUser
 } from '../controllers/UtilisateurController.js'
 import {
   creerUtilisateurValidator,
@@ -78,6 +79,13 @@ router.get(
   authMiddleware,
   adminMiddleware, // Décommentez si seulement les admins doivent voir tous les utilisateurs
   afficherUtilisateurs
+)
+
+router.put(
+  '/user/update',
+  authMiddleware,
+  updateCurentUser // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
+  
 )
 
 export default router

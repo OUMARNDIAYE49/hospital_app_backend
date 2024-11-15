@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { updateCurrentUser } from '../services/useService.js';
 
 const prisma = new PrismaClient();
 
@@ -173,3 +174,15 @@ export const supprimerUtilisateur = async (req, res) => {
     return handleServerError(res, 'Erreur lors de la suppression de l’utilisateur', error);
   }
 };
+
+export async function updateCurentUser(req, res, next) {
+  const userId = req.utilisateurs.admin_id;
+  const { nom, email } = req.body; 
+  try {
+    const user = await updateCurrentUser(userId, { nom, email });
+    res.status(200).json({ message: 'Informations mises à jour avec succès', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la mise à jour des informations', error: error.message });
+  }
+  next();
+}

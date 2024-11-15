@@ -1,9 +1,13 @@
-import prisma from '../config/database.js';
-import { Prisma } from '@prisma/client';
+import prisma from '../config/database.js'
+import { Prisma } from '@prisma/client'
 
-// Fonction pour créer un patient
 const createPatient = async (req, res) => {
   const { nom, telephone, email, date_naissance, adresse } = req.body;
+  const utilisateurId = req.utilisateur?.admin_id; // L'ID de l'utilisateur authentifié
+
+  if (!utilisateurId) {
+    return res.status(400).json({ message: 'Utilisateur non authentifié.' });
+  }
 
   try {
     const newPatient = await prisma.patients.create({
@@ -13,6 +17,7 @@ const createPatient = async (req, res) => {
         email,
         date_naissance: new Date(date_naissance),
         adresse,
+        utilisateurId,  // Enregistrez l'ID de l'utilisateur qui a créé le patient
       },
     });
 
@@ -34,21 +39,22 @@ const createPatient = async (req, res) => {
 
 // Fonction pour mettre à jour un patient
 const updatePatient = async (req, res) => {
-  const { id } = req.params;
-  const { nom, telephone, email, date_naissance, adresse } = req.body;
+  const { id } = req.params
+  const { nom, telephone, email, date_naissance, adresse } = req.body
 
   try {
     // Vérifier si un autre patient a déjà cet email
     const existingPatient = await prisma.patients.findUnique({
-      where: { email },
-    });
+      where: { email }
+    })
 
     if (existingPatient && existingPatient.id !== parseInt(id)) {
       return res.status(400).json({
-        message: "Cet email est déjà utilisé par un autre patient. Veuillez en choisir un autre.",
-      });
+        message:
+          'Cet email est déjà utilisé par un autre patient. Veuillez en choisir un autre.'
+      })
     }
-  
+
     // Effectuer la mise à jour si l'email est unique
     const updatedPatient = await prisma.patients.update({
       where: { id: parseInt(id) },
@@ -57,82 +63,97 @@ const updatePatient = async (req, res) => {
         telephone,
         email,
         date_naissance: new Date(date_naissance),
-        adresse,
-      },
-    });
+        adresse
+      }
+    })
 
     return res.status(200).json({
       message: 'Patient mis à jour avec succès',
-      patient: updatedPatient,
-    });
+      patient: updatedPatient
+    })
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return res.status(404).json({ message: 'Patient non trouvé' });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
+      return res.status(404).json({ message: 'Patient non trouvé' })
     }
-    console.error(error);
-    return res.status(500).json({ message: 'Erreur lors de la mise à jour du patient' });
+    console.error(error)
+    return res
+      .status(500)
+      .json({ message: 'Erreur lors de la mise à jour du patient' })
   }
-};
+}
 
 // Fonction pour supprimer un patient
 const deletePatient = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params
 
   try {
     const patient = await prisma.patients.findUnique({
-      where: { id: parseInt(id) },
-    });
+      where: { id: parseInt(id) }
+    })
 
     if (!patient) {
-      return res.status(404).json({ message: 'Patient non trouvé' });
+      return res.status(404).json({ message: 'Patient non trouvé' })
     }
 
     await prisma.patients.delete({
-      where: { id: parseInt(id) },
-    });
+      where: { id: parseInt(id) }
+    })
 
-    return res.status(200).json({ message: 'Patient supprimé avec succès' });
+    return res.status(200).json({ message: 'Patient supprimé avec succès' })
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2003'
+    ) {
       return res.status(400).json({
-        message: "Impossible de supprimer ce patient car il est associé à d'autres enregistrements.",
-      });
+        message:
+          "Impossible de supprimer ce patient car il est associé à d'autres enregistrements."
+      })
     }
-    console.error(error);
-    return res.status(500).json({ message: 'Erreur lors de la suppression du patient' });
+    console.error(error)
+    return res
+      .status(500)
+      .json({ message: 'Erreur lors de la suppression du patient' })
   }
-};
+}
 
 // Fonction pour obtenir un patient par ID
 const getPatientById = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params
 
   try {
     const patient = await prisma.patients.findUnique({
-      where: { id: parseInt(id) },
-    });
+      where: { id: parseInt(id) }
+    })
 
     if (!patient) {
-      return res.status(404).json({ message: 'Patient non trouvé' });
+      return res.status(404).json({ message: 'Patient non trouvé' })
     }
 
-    return res.status(200).json(patient);
+    return res.status(200).json(patient)
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erreur lors de la récupération du patient' });
+    console.error(error)
+    return res
+      .status(500)
+      .json({ message: 'Erreur lors de la récupération du patient' })
   }
-};
+}
 
 // Fonction pour obtenir la liste de tous les patients
 const getAllPatients = async (req, res) => {
   try {
-    const patients = await prisma.patients.findMany();
-    return res.status(200).json(patients);
+    const patients = await prisma.patients.findMany()
+    return res.status(200).json(patients)
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erreur lors de la récupération des patients' });
+    console.error(error)
+    return res
+      .status(500)
+      .json({ message: 'Erreur lors de la récupération des patients' })
   }
-};
+}
 
 // Exporter les fonctions comme un objet par défaut
 export default {
@@ -140,5 +161,5 @@ export default {
   updatePatient,
   deletePatient,
   getPatientById,
-  getAllPatients,
-};
+  getAllPatients
+}

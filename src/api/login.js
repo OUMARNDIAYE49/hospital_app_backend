@@ -11,7 +11,6 @@ router.post('/', async (req, res) => {
 
   try {
     const utilisateur = await prisma.utilisateurs.findUnique({
-      // Utiliser 'utilisateur' au lieu de 'utilisateurs'
       where: { email }
     })
 
@@ -20,10 +19,17 @@ router.post('/', async (req, res) => {
     }
 
     // Comparer le mot de passe fourni avec le mot de passe haché
-    const passwordValide = await bcrypt.compare(password, utilisateur.password) // Renommer la variable pour correspondre à la référence
+    const passwordValide = await bcrypt.compare(password, utilisateur.password)
     if (!passwordValide) {
       return res.status(401).json({ message: 'Mot de passe incorrect' }) // Modifier le message d'erreur
     }
+
+    // Loguer l'utilisateur connecté
+    console.log('Utilisateur connecté :', {
+      id: utilisateur.id,
+      email: utilisateur.email,
+      role: utilisateur.role
+    })
 
     // Générer un token JWT
     const token = jwt.sign(
@@ -32,8 +38,19 @@ router.post('/', async (req, res) => {
       { expiresIn: '23h' }
     )
 
-    return res.status(200).json({ token }) // Retourner le code d'état 200
+    // Retourner toutes les informations de l'utilisateur avec le token
+    return res.status(200).json({
+      token,
+      utilisateur: {
+        id: utilisateur.id,
+        email: utilisateur.email,
+        nom: utilisateur.nom, // Si vous avez ce champ dans votre base de données
+        role: utilisateur.role
+        // Ajouter d'autres informations de l'utilisateur que vous souhaitez retourner
+      }
+    })
   } catch (error) {
+    console.error(error) // Pour mieux débugger en cas d'erreur
     return res.status(500).json({ message: 'Erreur serveur', error }) // Changer le message d'erreur
   }
 })

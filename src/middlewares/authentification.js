@@ -13,6 +13,12 @@ const authMiddleware = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     req.utilisateur = decoded
+
+    // Vous pouvez ajouter ici l'ID de l'utilisateur dans la réponse
+    console.log(
+      `Utilisateur connecté avec l'ID: ${req.utilisateur.utilisateurId}`
+    )
+
     next()
   } catch {
     return res.status(400).json({ message: 'Token invalide.' })
