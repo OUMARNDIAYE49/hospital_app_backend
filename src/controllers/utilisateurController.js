@@ -10,7 +10,7 @@ const handleServerError = (res, message, error) => {
 
 export const creerUtilisateur = async (req, res) => {
   try {
-    const { nom, email, role, password } = req.body; // Suppression de specialite_id ici
+    const { nom, email, role, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Vérifier si l'email existe déjà
@@ -23,18 +23,9 @@ export const creerUtilisateur = async (req, res) => {
     }
 
     // Définir specialite_id en fonction du rôle
-    let specialite_id;
-    if (role === 'ADMIN') {
-      // Trouver l'ID de la spécialité "secrétaire" pour ADMIN
-      const specialiteSecretaire = await prisma.specialites.findUnique({
-        where: { nom: 'secrétaire' },
-      });
-      if (!specialiteSecretaire) {
-        return res.status(404).json({ message: 'La spécialité "secrétaire" n\'existe pas' });
-      }
-      specialite_id = specialiteSecretaire.id;
-    } else if (role === 'MEDECIN') {
-      specialite_id = req.body.specialite_id; // Spécialité fournie pour MEDECIN
+    let specialite_id = null;
+    if (role === 'MEDECIN') {
+      specialite_id = req.body.specialite_id;
       if (!specialite_id) {
         return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
       }
@@ -94,7 +85,7 @@ export const afficherUtilisateurParId = async (req, res) => {
 
 export const mettreAjourUtilisateur = async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const { nom, email, role, password } = req.body; // Suppression de specialite_id ici
+  const { nom, email, role, password } = req.body;
 
   try {
     const utilisateurExist = await prisma.utilisateurs.findUnique({
@@ -114,17 +105,9 @@ export const mettreAjourUtilisateur = async (req, res) => {
     }
 
     // Définir specialite_id en fonction du rôle
-    let specialite_id;
-    if (role === 'ADMIN') {
-      const specialiteSecretaire = await prisma.specialites.findUnique({
-        where: { nom: 'secrétaire' },
-      });
-      if (!specialiteSecretaire) {
-        return res.status(404).json({ message: 'La spécialité "secrétaire" n\'existe pas' });
-      }
-      specialite_id = specialiteSecretaire.id;
-    } else if (role === 'MEDECIN') {
-      specialite_id = req.body.specialite_id; // Spécialité fournie pour MEDECIN
+    let specialite_id = null;
+    if (role === 'MEDECIN') {
+      specialite_id = req.body.specialite_id;
       if (!specialite_id) {
         return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
       }
@@ -137,11 +120,12 @@ export const mettreAjourUtilisateur = async (req, res) => {
       }
     }
 
+    // Préparer les données de mise à jour
     const dataToUpdate = {
       nom,
       email,
       role,
-      specialite: specialite_id ? { connect: { id: specialite_id } } : undefined,
+      specialite: role === 'ADMIN' ? { disconnect: true } : { connect: { id: specialite_id } },
     };
 
     if (password) {
@@ -161,6 +145,7 @@ export const mettreAjourUtilisateur = async (req, res) => {
     return handleServerError(res, 'Erreur lors de la mise à jour de l’utilisateur', error);
   }
 };
+
 
 export const supprimerUtilisateur = async (req, res) => {
   const id = parseInt(req.params.id, 10);
