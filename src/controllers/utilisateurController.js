@@ -176,7 +176,7 @@ export const supprimerUtilisateur = async (req, res) => {
 };
 
 export async function updateCurentUser(req, res, next) {
-  const userId = req.utilisateurs.admin_id;
+  const userId = req.utilisateur.utilisateurId;
   const { nom, email } = req.body; 
   try {
     const user = await updateCurrentUser(userId, { nom, email });

@@ -1,0 +1,78 @@
+{
+	"info": {
+		"_postman_id": "ed4033ac-a3f0-42a6-9d9f-9e646aa578dc",
+		"name": "rendezVous",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38098498"
+	},
+	"item": [
+		{
+			"name": "Get_rendezvous",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Post_rendezvous",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/rendezvous",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"rendezvous"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put_rendezvous",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/rendezvous",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"rendezvous"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_Rendezvous",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/rendezvous",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"rendezvous"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

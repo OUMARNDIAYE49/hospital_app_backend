@@ -83,7 +83,9 @@ router.get(
 
 router.put(
   '/user/update',
+    // medecinMiddleware,
   authMiddleware,
+  adminMiddleware,
   updateCurentUser // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
   
 )

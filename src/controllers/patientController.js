@@ -3,7 +3,8 @@ import { Prisma } from '@prisma/client'
 
 const createPatient = async (req, res) => {
   const { nom, telephone, email, date_naissance, adresse } = req.body;
-  const utilisateurId = req.utilisateur?.admin_id; // L'ID de l'utilisateur authentifié
+  // const utilisateurId = req.utilisateur?.admin_id; // L'ID de l'utilisateur authentifié
+  const utilisateurId = req.utilisateur.utilisateurId
 
   if (!utilisateurId) {
     return res.status(400).json({ message: 'Utilisateur non authentifié.' });
@@ -17,7 +18,7 @@ const createPatient = async (req, res) => {
         email,
         date_naissance: new Date(date_naissance),
         adresse,
-        utilisateurId,  // Enregistrez l'ID de l'utilisateur qui a créé le patient
+        // utilisateurId,  // Enregistrez l'ID de l'utilisateur qui a créé le patient
       },
     });
 
