@@ -2,7 +2,6 @@ import { body, param, validationResult } from 'express-validator'
 import prisma from '../config/database.js'
 import { StatusCodes } from 'http-status-codes'
 
-// Validation pour la création d'un utilisateur
 const creerUtilisateurValidator = [
   body('nom')
     .notEmpty()
@@ -13,13 +12,15 @@ const creerUtilisateurValidator = [
       'Le nom doit contenir uniquement des lettres et des caractères spéciaux autorisés.'
     )
     .bail()
-    .isLength({ min: 3 })
+    .isLength({ min: 3, max:100})
     .withMessage('Le nom doit contenir au moins 3 caractères.'),
 
   body('email')
     .notEmpty()
-    .withMessage("L'email est requis.")
-    .bail()
+    .withMessage("L'email est obligatoire")
+    .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/)
+    .withMessage("L'email doit être valide et se terminer par '@gmail.com'")
+      .isLength({min:10, max: 50 })
     .isEmail()
     .withMessage('Doit être un email valide.')
     .bail()
@@ -37,7 +38,7 @@ const creerUtilisateurValidator = [
     .notEmpty()
     .withMessage('Le mot de passe est requis.')
     .bail()
-    .isLength({ min: 6 })
+    .isLength({ min: 6, max:100 })
     .withMessage('Le mot de passe doit contenir au moins 6 caractères.'),
 
   (req, res, next) => {
@@ -51,19 +52,17 @@ const creerUtilisateurValidator = [
   }
 ]
 
-// Validation pour la mise à jour d'un utilisateur
-// Validation pour la mise à jour d'un utilisateur
 const mettreAjourUtilisateurValidator = [
   param('id')
     .notEmpty()
     .withMessage("L'id est requis.")
     .bail()
     .isInt()
-    .withMessage('ID invalide.') // Vérifie que l'ID est un entier
+    .withMessage('ID invalide.') 
     .bail()
     .custom(async (value) => {
       const utilisateur = await prisma.utilisateurs.findUnique({
-        where: { id: parseInt(value) } // Conversion en entier
+        where: { id: parseInt(value) } 
       })
       if (!utilisateur) {
         throw new Error('Utilisateur non trouvé.')
@@ -81,12 +80,16 @@ const mettreAjourUtilisateurValidator = [
       'Le nom doit contenir uniquement des lettres et des caractères spéciaux autorisés.'
     )
     .bail()
-    .isLength({ min: 3 })
+    .isLength({ min: 3, max:100 })
     .withMessage('Le nom doit contenir au moins 3 caractères.'),
 
   body('email')
     .optional()
     .isEmail()
+    .withMessage("L'email est obligatoire")
+  .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/)
+  .withMessage("L'email doit être valide et se terminer par '@gmail.com'")
+    .isLength({min:10, max: 50 })
     .withMessage('Doit être un email valide.')
     .bail()
     .custom(async (value, { req }) => {
@@ -104,7 +107,7 @@ const mettreAjourUtilisateurValidator = [
 
   body('password')
     .optional()
-    .isLength({ min: 6 })
+    .isLength({ min: 6, max:100  })
     .withMessage('Le mot de passe doit contenir au moins 6 caractères.'),
 
   (req, res, next) => {
@@ -126,22 +129,20 @@ const mettreAjourUtilisateurValidator = [
   }
 ]
 
-// Validation pour la suppression d'un utilisateur
-
 const supprimerUtilisateurValidator = [
   param('id')
     .notEmpty()
     .withMessage("L'id est requis.")
     .bail()
     .isInt()
-    .withMessage('ID invalide.') // Vérifie si l'ID est un entier
+    .withMessage('ID invalide.')
     .bail()
     .custom(async (value) => {
       const utilisateur = await prisma.utilisateurs.findUnique({
-        where: { id: parseInt(value) } // Conversion en entier
+        where: { id: parseInt(value) } 
       })
       if (!utilisateur) {
-        throw new Error('Utilisateur non trouvé.') // Message d'erreur personnalisé
+        throw new Error('Utilisateur non trouvé.') 
       }
       return true
     }),
@@ -149,14 +150,13 @@ const supprimerUtilisateurValidator = [
   (req, res, next) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      // Si des erreurs sont présentes, nous traitons le cas de l'utilisateur non trouvé
       const utilisateurNonTrouve = errors
         .array()
         .find((error) => error.msg === 'Utilisateur non trouvé.')
       if (utilisateurNonTrouve) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .json({ message: 'Utilisateur non trouvé' }) // Réponse JSON
+          .json({ message: 'Utilisateur non trouvé' }) 
       }
       return res
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
