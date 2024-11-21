@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { updateCurrentUser } from '../services/useService.js';
+import { updateCurrentUser, changePassword } from '../services/useService.js';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +14,6 @@ export const creerUtilisateur = async (req, res) => {
     const { nom, email, role, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Vérifier si l'email existe déjà
     const utilisateurExistant = await prisma.utilisateurs.findUnique({
       where: { email },
     });
@@ -23,7 +22,6 @@ export const creerUtilisateur = async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
-    // Définir specialite_id en fonction du rôle
     let specialite_id = null;
     if (role === 'MEDECIN') {
       specialite_id = req.body.specialite_id;
@@ -105,7 +103,6 @@ export const mettreAjourUtilisateur = async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
-    // Définir specialite_id en fonction du rôle
     let specialite_id = null;
     if (role === 'MEDECIN') {
       specialite_id = req.body.specialite_id;
@@ -121,7 +118,6 @@ export const mettreAjourUtilisateur = async (req, res) => {
       }
     }
 
-    // Préparer les données de mise à jour
     const dataToUpdate = {
       nom,
       email,
@@ -166,7 +162,6 @@ export const supprimerUtilisateur = async (req, res) => {
     return res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
   } catch (error) {
     if (error.code === 'P2003') {
-      // Code d'erreur pour contrainte de clé étrangère violée
       return res.status(400).json({
         message: 'Impossible de supprimer cet utilisateur car il est lié à d’autres enregistrements.',
       });
@@ -185,4 +180,17 @@ export async function updateCurentUser(req, res, next) {
     res.status(500).json({ message: 'Erreur lors de la mise à jour des informations', error: error.message });
   }
   next();
+}
+
+export async function modifyPassword(req, res) {
+  const userId = req.utilisateur.utilisateurId;
+  console.log("Corps de la requête :", req.body);
+  const { oldPassword, newPassword } = req.body;  
+
+  try {
+    const response = await changePassword(userId, oldPassword, newPassword); 
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 }
