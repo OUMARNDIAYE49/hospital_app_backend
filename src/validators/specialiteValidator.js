@@ -5,7 +5,7 @@ export const createSpecialite = [
   body('nom')
     .notEmpty()
     .withMessage('Le nom de la spécialité est obligatoire')
-    .isLength({ max: 100 })
+    .isLength({ min :3, max: 100 })
     .withMessage('Le nom doit avoir au maximum 100 caractères')
 ]
 
@@ -14,7 +14,7 @@ export const updateSpecialite = [
 
   body('nom')
     .optional()
-    .isLength({ max: 100 })
+    .isLength({ min :3, max: 100 })
     .withMessage('Le nom doit avoir au maximum 100 caractères')
 ]
 

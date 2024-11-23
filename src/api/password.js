@@ -26,9 +26,8 @@ router.post("/forgot-password", async (req, res) => {
     const token = jwt.sign(
       { utilisateurId: utilisateur.id },
       process.env.JWT_RESET_PASSWORD_SECRET,
-      { expiresIn: "2h" }
+      { expiresIn: '2h' }
     );
-
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     const transporter = nodemailer.createTransport({

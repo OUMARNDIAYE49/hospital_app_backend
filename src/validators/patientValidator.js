@@ -4,7 +4,7 @@ export const createPatient = [
   body('nom')
     .notEmpty()
     .withMessage('Le nom est obligatoire')
-    .isLength({ max: 100 })
+    .isLength({min: 3, max: 100 })
     .withMessage('Le nom doit avoir au maximum 100 caractères'),
   body('telephone')
     .notEmpty()
@@ -36,7 +36,7 @@ export const updatePatient = [
   param('id').isInt().withMessage('ID patient invalide'),
   body('nom')
     .optional()
-    .isLength({ max: 100 })
+    .isLength({min: 3, max: 100 })
     .withMessage('Le nom doit avoir au maximum 100 caractères'),
   body('telephone')
     .optional()
