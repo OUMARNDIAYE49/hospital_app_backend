@@ -1,39 +1,43 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-import { updateCurrentUser, changePassword } from '../services/useService.js';
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
+import { updateCurrentUser, changePassword } from '../services/useService.js'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 const handleServerError = (res, message, error) => {
-  console.error(error);
-  return res.status(500).json({ message });
-};
+  console.error(error)
+  return res.status(500).json({ message })
+}
 
 export const creerUtilisateur = async (req, res) => {
   try {
-    const { nom, email, role, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { nom, email, role, password } = req.body
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const utilisateurExistant = await prisma.utilisateurs.findUnique({
-      where: { email },
-    });
+      where: { email }
+    })
 
     if (utilisateurExistant) {
-      return res.status(400).json({ message: 'Email déjà utilisé' });
+      return res.status(400).json({ message: 'Email déjà utilisé' })
     }
 
-    let specialite_id = null;
+    let specialite_id = null
     if (role === 'MEDECIN') {
-      specialite_id = req.body.specialite_id;
+      specialite_id = req.body.specialite_id
       if (!specialite_id) {
-        return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
+        return res
+          .status(400)
+          .json({ message: 'La spécialité est obligatoire pour un médecin' })
       }
 
       const specialiteExistante = await prisma.specialites.findUnique({
-        where: { id: specialite_id },
-      });
+        where: { id: specialite_id }
+      })
       if (!specialiteExistante) {
-        return res.status(404).json({ message: 'La spécialité spécifiée n\'existe pas' });
+        return res
+          .status(404)
+          .json({ message: "La spécialité spécifiée n'existe pas" })
       }
     }
 
@@ -43,78 +47,134 @@ export const creerUtilisateur = async (req, res) => {
         email,
         role,
         password: hashedPassword,
-        specialite: specialite_id ? { connect: { id: specialite_id } } : undefined,
-      },
-    });
+        specialite: specialite_id
+          ? { connect: { id: specialite_id } }
+          : undefined
+      }
+    })
 
     return res.status(201).json({
       message: 'Utilisateur créé avec succès',
-      utilisateur: nouvelUtilisateur,
-    });
+      utilisateur: nouvelUtilisateur
+    })
   } catch (error) {
-    return handleServerError(res, 'Erreur lors de la création de l’utilisateur', error);
+    return handleServerError(
+      res,
+      'Erreur lors de la création de l’utilisateur',
+      error
+    )
   }
-};
+}
 
 export const afficherUtilisateurs = async (req, res) => {
   try {
-    const utilisateurs = await prisma.utilisateurs.findMany();
-    return res.status(200).json(utilisateurs);
+    const utilisateurs = await prisma.utilisateurs.findMany()
+    return res.status(200).json(utilisateurs)
   } catch (error) {
-    return handleServerError(res, 'Erreur lors de la récupération des utilisateurs', error);
+    return handleServerError(
+      res,
+      'Erreur lors de la récupération des utilisateurs',
+      error
+    )
   }
-};
+}
 
 export const afficherUtilisateurParId = async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id, 10)
   try {
     const utilisateur = await prisma.utilisateurs.findUnique({
-      where: { id },
-    });
+      where: { id }
+    })
 
     if (!utilisateur) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      return res.status(404).json({ message: 'Utilisateur non trouvé' })
     }
 
-    return res.status(200).json(utilisateur);
+    return res.status(200).json(utilisateur)
   } catch (error) {
-    return handleServerError(res, 'Erreur lors de la récupération de l’utilisateur', error);
+    return handleServerError(
+      res,
+      'Erreur lors de la récupération de l’utilisateur',
+      error
+    )
   }
-};
+}
+export const afficherMedecinDisponible = async (req, res) => {
+  const { dateDebut, dateFin } = req.query // Correction de req.qery en req.query
+  const date_debut = new Date(dateDebut).toISOString()
+  const date_fin = new Date(dateFin).toISOString()
+  try {
+    const medecinsDisponibles = await prisma.utilisateurs.findMany({
+      where: {
+        role: 'MEDECIN',
+        rendezVous_as_medecin: {
+          none: {
+            date_debut: {
+              lte: date_debut
+            },
+            date_fin: {
+              gte: date_fin
+            }
+          }
+        }
+      },
+      include: {
+        rendezVous_as_medecin: {
+          select: {
+            id: true,
+            status: true
+          }
+        }
+      }
+    })
+    res.json(medecinsDisponibles)
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        error: 'Erreur lors de la récupération des médecins disponibles',
+        error
+      })
+  }
+}
 
 export const mettreAjourUtilisateur = async (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const { nom, email, role, password } = req.body;
+  const id = parseInt(req.params.id, 10)
+  const { nom, email, role, password } = req.body
 
   try {
     const utilisateurExist = await prisma.utilisateurs.findUnique({
-      where: { id },
-    });
+      where: { id }
+    })
 
     if (!utilisateurExist) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      return res.status(404).json({ message: 'Utilisateur non trouvé' })
     }
 
     const emailExistant = await prisma.utilisateurs.findUnique({
-      where: { email },
-    });
+      where: { email }
+    })
 
     if (emailExistant && emailExistant.id !== id) {
-      return res.status(400).json({ message: 'Email déjà utilisé' });
+      return res.status(400).json({ message: 'Email déjà utilisé' })
     }
 
-    let specialite_id = null;
+    let specialite_id = null
     if (role === 'MEDECIN') {
-      specialite_id = req.body.specialite_id;
+      specialite_id = req.body.specialite_id
       if (!specialite_id) {
-        return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin' });
+        return res
+          .status(400)
+          .json({ message: 'La spécialité est obligatoire pour un médecin' })
       }
 
       const specialiteExistante = await prisma.specialites.findUnique({
-        where: { id: specialite_id },
-      });
+        where: { id: specialite_id }
+      })
       if (!specialiteExistante) {
-        return res.status(404).json({ message: 'La spécialité spécifiée n\'existe pas' });
+        return res
+          .status(404)
+          .json({ message: "La spécialité spécifiée n'existe pas" })
       }
     }
 
@@ -122,75 +182,91 @@ export const mettreAjourUtilisateur = async (req, res) => {
       nom,
       email,
       role,
-      specialite: role === 'ADMIN' ? { disconnect: true } : { connect: { id: specialite_id } },
-    };
+      specialite:
+        role === 'ADMIN'
+          ? { disconnect: true }
+          : { connect: { id: specialite_id } }
+    }
 
     if (password) {
-      dataToUpdate.password = await bcrypt.hash(password, 10);
+      dataToUpdate.password = await bcrypt.hash(password, 10)
     }
 
     const utilisateurMisAJour = await prisma.utilisateurs.update({
       where: { id },
-      data: dataToUpdate,
-    });
+      data: dataToUpdate
+    })
 
     return res.status(200).json({
       message: 'Utilisateur mis à jour avec succès',
-      utilisateur: utilisateurMisAJour,
-    });
+      utilisateur: utilisateurMisAJour
+    })
   } catch (error) {
-    return handleServerError(res, 'Erreur lors de la mise à jour de l’utilisateur', error);
+    return handleServerError(
+      res,
+      'Erreur lors de la mise à jour de l’utilisateur',
+      error
+    )
   }
-};
-
+}
 
 export const supprimerUtilisateur = async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id, 10)
   try {
     const utilisateur = await prisma.utilisateurs.findUnique({
-      where: { id },
-    });
+      where: { id }
+    })
 
     if (!utilisateur) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      return res.status(404).json({ message: 'Utilisateur non trouvé' })
     }
 
     await prisma.utilisateurs.delete({
-      where: { id },
-    });
+      where: { id }
+    })
 
-    return res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
+    return res.status(200).json({ message: 'Utilisateur supprimé avec succès' })
   } catch (error) {
     if (error.code === 'P2003') {
       return res.status(400).json({
-        message: 'Impossible de supprimer cet utilisateur car il est lié à d’autres enregistrements.',
-      });
+        message:
+          'Impossible de supprimer cet utilisateur car il est lié à d’autres enregistrements.'
+      })
     }
-    return handleServerError(res, 'Erreur lors de la suppression de l’utilisateur', error);
+    return handleServerError(
+      res,
+      'Erreur lors de la suppression de l’utilisateur',
+      error
+    )
   }
-};
+}
 
 export async function updateCurentUser(req, res, next) {
-  const userId = req.utilisateur.utilisateurId;
-  const { nom, email } = req.body; 
+  const userId = req.utilisateur.utilisateurId
+  const { nom, email } = req.body
   try {
-    const user = await updateCurrentUser(userId, { nom, email });
-    res.status(200).json({ message: 'Informations mises à jour avec succès', user });
+    const user = await updateCurrentUser(userId, { nom, email })
+    res
+      .status(200)
+      .json({ message: 'Informations mises à jour avec succès', user })
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour des informations', error: error.message });
+    res.status(500).json({
+      message: 'Erreur lors de la mise à jour des informations',
+      error: error.message
+    })
   }
-  next();
+  next()
 }
 
 export async function modifyPassword(req, res) {
-  const userId = req.utilisateur.utilisateurId;
-  console.log("Corps de la requête :", req.body);
-  const { oldPassword, newPassword } = req.body;  
+  const userId = req.utilisateur.utilisateurId
+  console.log('Corps de la requête :', req.body)
+  const { oldPassword, newPassword } = req.body
 
   try {
-    const response = await changePassword(userId, oldPassword, newPassword); 
-    res.status(200).json(response);
+    const response = await changePassword(userId, oldPassword, newPassword)
+    res.status(200).json(response)
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message })
   }
 }

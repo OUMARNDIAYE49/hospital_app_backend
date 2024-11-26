@@ -6,7 +6,8 @@ import {
   supprimerUtilisateur,
   mettreAjourUtilisateur,
   updateCurentUser,
-  modifyPassword
+  modifyPassword,
+  afficherMedecinDisponible
 } from '../controllers/utilisateurController.js'
 import {
   creerUtilisateurValidator,
@@ -98,6 +99,13 @@ router.put(
   adminMiddleware,
   modifyPassword // Assurez-vous que les administrateurs peuvent mettre à jour les utilisateurs
   
+)
+router.get(
+  '/medecin',
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware, // Décommentez si seulement les admins doivent voir les détails d'un utilisateur
+  afficherMedecinDisponible
 )
 
 export default router
