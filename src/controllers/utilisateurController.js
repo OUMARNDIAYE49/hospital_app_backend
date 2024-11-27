@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
-import { updateCurrentUser, changePassword } from '../services/useService.js'
+import { updateCurrentUser } from '../services/useService.js'
 
 const prisma = new PrismaClient()
 
@@ -129,12 +129,10 @@ export const afficherMedecinDisponible = async (req, res) => {
     })
     res.json(medecinsDisponibles)
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: 'Erreur lors de la récupération des médecins disponibles',
-        error
-      })
+    res.status(500).json({
+      error: 'Erreur lors de la récupération des médecins disponibles',
+      error
+    })
   }
 }
 
@@ -258,15 +256,66 @@ export async function updateCurentUser(req, res, next) {
   next()
 }
 
-export async function modifyPassword(req, res) {
-  const userId = req.utilisateur.utilisateurId
-  console.log('Corps de la requête :', req.body)
-  const { oldPassword, newPassword } = req.body
+export const changePassword = async (req, res) => {
+  const userId = req.utilisateur?.utilisateurId; 
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      error: "ValidationError",
+      message: "Veuillez fournir le mot de passe actuel et le nouveau mot de passe.",
+    });
+  }
 
   try {
-    const response = await changePassword(userId, oldPassword, newPassword)
-    res.status(200).json(response)
+    const user = await prisma.utilisateurs.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "UserNotFound",
+        message: "Utilisateur non trouvé.",
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({
+        error: "InvalidCurrentPassword",
+        message: "Le mot de passe actuel est incorrect.",
+      });
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({
+        error: "SamePasswordError",
+        message: "Le nouveau mot de passe doit être différent de l'ancien.",
+      });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    const updatedUser = await prisma.utilisateurs.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({
+      message: "Mot de passe mis à jour avec succès.",
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+      },
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message })
+    console.error("Erreur lors de la mise à jour du mot de passe :", error);
+
+    res.status(500).json({
+      error: "InternalServerError",
+      message: "Une erreur est survenue lors de la mise à jour du mot de passe.",
+    });
   }
-}
+};

@@ -7,6 +7,7 @@ const creerUtilisateurValidator = [
     .notEmpty()
     .withMessage('Le nom est requis.')
     .bail()
+    .trim()
     .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/)
     .withMessage(
       'Le nom doit contenir uniquement des lettres et des caractères spéciaux autorisés.'
@@ -75,6 +76,7 @@ const mettreAjourUtilisateurValidator = [
     .notEmpty()
     .withMessage('Le nom ne peut pas être vide.')
     .bail()
+    .trim()
     .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/)
     .withMessage(
       'Le nom doit contenir uniquement des lettres et des caractères spéciaux autorisés.'

@@ -3,6 +3,7 @@ import { body, param } from 'express-validator';
 export const createPatient = [
   body('nom')
     .notEmpty()
+    .trim()
     .withMessage('Le nom est obligatoire')
     .isLength({min: 3, max: 100 })
     .withMessage('Le nom doit avoir au maximum 100 caractères'),
@@ -36,6 +37,7 @@ export const updatePatient = [
   param('id').isInt().withMessage('ID patient invalide'),
   body('nom')
     .optional()
+    .trim()
     .isLength({min: 3, max: 100 })
     .withMessage('Le nom doit avoir au maximum 100 caractères'),
   body('telephone')
