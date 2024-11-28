@@ -137,76 +137,74 @@ export const afficherMedecinDisponible = async (req, res) => {
 }
 
 export const mettreAjourUtilisateur = async (req, res) => {
-  const id = parseInt(req.params.id, 10)
-  const { nom, email, role, password } = req.body
+  const id = parseInt(req.params.id, 10); // Conversion de l'ID en nombre
+  const { nom, email, role, specialite_id } = req.body; // Récupération des données
 
   try {
+    // Vérifier si l'utilisateur existe
     const utilisateurExist = await prisma.utilisateurs.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
 
     if (!utilisateurExist) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' })
+      return res.status(404).json({ message: `Utilisateur avec l'ID ${id} non trouvé.` });
     }
 
+    // Vérifier si l'email est déjà utilisé par un autre utilisateur
     const emailExistant = await prisma.utilisateurs.findUnique({
-      where: { email }
-    })
+      where: { email },
+    });
 
     if (emailExistant && emailExistant.id !== id) {
-      return res.status(400).json({ message: 'Email déjà utilisé' })
+      return res.status(400).json({ message: 'Cet email est déjà utilisé par un autre utilisateur.' });
     }
 
-    let specialite_id = null
+    // Gérer la logique spécifique aux médecins
     if (role === 'MEDECIN') {
-      specialite_id = req.body.specialite_id
       if (!specialite_id) {
-        return res
-          .status(400)
-          .json({ message: 'La spécialité est obligatoire pour un médecin' })
+        return res.status(400).json({ message: 'La spécialité est obligatoire pour un médecin.' });
       }
 
       const specialiteExistante = await prisma.specialites.findUnique({
-        where: { id: specialite_id }
-      })
+        where: { id: specialite_id },
+      });
+
       if (!specialiteExistante) {
-        return res
-          .status(404)
-          .json({ message: "La spécialité spécifiée n'existe pas" })
+        return res.status(404).json({ message: "La spécialité spécifiée n'existe pas." });
       }
     }
 
+    // Préparer les données pour la mise à jour
     const dataToUpdate = {
       nom,
       email,
       role,
-      specialite:
-        role === 'ADMIN'
-          ? { disconnect: true }
-          : { connect: { id: specialite_id } }
-    }
+      specialite: role === 'ADMIN'
+        ? { disconnect: true }
+        : specialite_id
+          ? { connect: { id: specialite_id } }
+          : undefined,
+    };
 
-    if (password) {
-      dataToUpdate.password = await bcrypt.hash(password, 10)
-    }
-
+    // Mettre à jour l'utilisateur
     const utilisateurMisAJour = await prisma.utilisateurs.update({
       where: { id },
-      data: dataToUpdate
-    })
+      data: dataToUpdate,
+      select: { id: true, nom: true, email: true, role: true, specialite: true },
+    });
 
+    // Répondre avec succès
     return res.status(200).json({
-      message: 'Utilisateur mis à jour avec succès',
-      utilisateur: utilisateurMisAJour
-    })
+      message: `Utilisateur avec l'ID ${id} mis à jour avec succès.`,
+      utilisateur: utilisateurMisAJour,
+    });
   } catch (error) {
-    return handleServerError(
-      res,
-      'Erreur lors de la mise à jour de l’utilisateur',
-      error
-    )
+    // Gérer les erreurs
+    console.error(error);
+    return res.status(500).json({ message: "Erreur lors de la mise à jour de l’utilisateur.", error });
   }
-}
+};
+
 
 export const supprimerUtilisateur = async (req, res) => {
   const id = parseInt(req.params.id, 10)
