@@ -7,7 +7,8 @@ import {
   mettreAjourUtilisateur,
   updateCurentUser,
   changePassword,
-  afficherMedecinDisponible
+  afficherMedecinDisponible,
+  afficherTelephonePatientsDisponibles
 } from '../controllers/utilisateurController.js'
 import {
   creerUtilisateurValidator,
@@ -98,6 +99,14 @@ router.get(
   authMiddleware,
   adminMiddleware,
   afficherMedecinDisponible
+)
+
+router.get(
+  '/patients/telephones-disponibles',
+  // medecinMiddleware,
+  authMiddleware,
+  adminMiddleware,
+  afficherTelephonePatientsDisponibles
 )
 
 export default router

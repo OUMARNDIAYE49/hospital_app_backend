@@ -136,6 +136,43 @@ export const afficherMedecinDisponible = async (req, res) => {
   }
 }
 
+export const afficherTelephonePatientsDisponibles = async (req, res) => {
+  const { dateDebut, dateFin } = req.query;
+
+  if (!dateDebut || !dateFin) {
+    return res.status(400).json({ error: 'Les dates début et fin sont obligatoires' });
+  }
+
+  try {
+    const patientsDisponibles = await prisma.patients.findMany({
+      where: {
+        rendezVous: {
+          none: {
+            OR: [
+              {
+                date_debut: { lte: new Date(dateFin).toISOString() },
+                date_fin: { gte: new Date(dateDebut).toISOString() }
+              }
+            ]
+          }
+        }
+      },
+      select: {
+        telephone: true
+      }
+    });
+
+    res.json(patientsDisponibles.map(patient => patient.telephone));
+  } catch (error) {
+    res.status(500).json({
+      error: 'Erreur lors de la récupération des téléphones des patients disponibles',
+      details: error.message
+    });
+  }
+};
+
+
+
 export const mettreAjourUtilisateur = async (req, res) => {
   const id = parseInt(req.params.id, 10); // Conversion de l'ID en nombre
   const { nom, email, role, specialite_id } = req.body; // Récupération des données
